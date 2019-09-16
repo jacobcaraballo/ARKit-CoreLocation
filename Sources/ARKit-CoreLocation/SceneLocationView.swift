@@ -178,6 +178,7 @@ open class SceneLocationView: ARSCNView {
     }
 }
 
+@available(iOS 11.0, *)
 public extension SceneLocationView {
 	
 	var me: (position: SCNVector3, location: CLLocation, sceneNode: SCNNode)? {
