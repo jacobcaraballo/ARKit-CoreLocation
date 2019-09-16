@@ -324,6 +324,35 @@ public extension SceneLocationView {
     }
 }
 
+// MARK: Jacob Caraballo addition
+@available(iOS 11.0, *)
+public extension SceneLocationView {
+	
+	/// Adds routes to the scene and lets you specify the geometry prototype for the box.
+	/// Note: You can provide your own SCNBox prototype to base the direction nodes from.
+	///
+	/// - Parameters:
+	///   - polyline: The MKPolyline of coordinates.
+	///   - boxBuilder: A block that will customize how a box is built.
+	func addRoute(with polyline: MKPolyline, boxBuilder: BoxBuilder? = nil) {
+		guard let altitude = sceneLocationManager.currentLocation?.altitude else {
+			return assertionFailure("we don't have an elevation")
+		}
+		let polyNode = PolylineNode(polyline: polyline, altitude: altitude - 2.0, boxBuilder: boxBuilder)
+		polylineNodes.append(polyNode)
+		polyNode.locationNodes.forEach {
+			let locationNodeLocation = self.locationOfLocationNode($0)
+			$0.updatePositionAndScale(setup: true,
+									  scenePosition: currentScenePosition,
+									  locationNodeLocation: locationNodeLocation,
+									  locationManager: sceneLocationManager,
+									  onCompletion: {})
+			sceneNode?.addChildNode($0)
+		}
+		
+	}
+}
+
 @available(iOS 11.0, *)
 public extension SceneLocationView {
 
@@ -343,16 +372,16 @@ public extension SceneLocationView {
 
         polylineNodes.append(contentsOf: polyNodes)
         polyNodes.forEach {
-            $0.locationNodes.forEach {
-                let locationNodeLocation = self.locationOfLocationNode($0)
-            $0.updatePositionAndScale(setup: true,
-                                      scenePosition: currentScenePosition,
-                                          locationNodeLocation: locationNodeLocation,
-                                      locationManager: sceneLocationManager,
-                                      onCompletion: {})
-            sceneNode?.addChildNode($0)
-        }
-    }
+				$0.locationNodes.forEach {
+					let locationNodeLocation = self.locationOfLocationNode($0)
+				$0.updatePositionAndScale(setup: true,
+										  scenePosition: currentScenePosition,
+											  locationNodeLocation: locationNodeLocation,
+										  locationManager: sceneLocationManager,
+										  onCompletion: {})
+				sceneNode?.addChildNode($0)
+			}
+		}
     }
 
     func removeRoutes(routes: [MKRoute]) {
