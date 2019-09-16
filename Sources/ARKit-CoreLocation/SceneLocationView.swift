@@ -178,6 +178,18 @@ open class SceneLocationView: ARSCNView {
     }
 }
 
+public extension SceneLocationView {
+	
+	var me: (position: SCNVector3, location: CLLocation, sceneNode: SCNNode)? {
+		guard let currentPosition = currentScenePosition,
+			let currentLocation = sceneLocationManager.currentLocation,
+			let sceneNode = sceneNode else { return nil }
+		
+		return (currentPosition, currentLocation, sceneNode)
+	}
+	
+}
+
 @available(iOS 11.0, *)
 public extension SceneLocationView {
 
