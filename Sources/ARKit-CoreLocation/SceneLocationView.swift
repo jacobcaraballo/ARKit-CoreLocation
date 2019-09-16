@@ -16,7 +16,7 @@ import MapKit
 open class SceneLocationView: ARSCNView {
     /// The limit to the scene, in terms of what data is considered reasonably accurate.
     /// Measured in meters.
-	static let sceneLimit = 11.0
+	static let sceneLimit = 100.0
 
     /// The type of tracking to use.
     ///
