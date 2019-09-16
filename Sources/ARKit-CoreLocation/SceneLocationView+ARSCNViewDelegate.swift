@@ -115,7 +115,8 @@ extension SceneLocationView {
 			sceneNode?.camera = self.camera
 			camera.zFar = 11.0
             scene.rootNode.addChildNode(sceneNode!)
-
+			pointOfView = sceneNode
+			
             if showAxesNode {
                 let axesNode = SCNNode.axesNode(quiverLength: 0.1, quiverThickness: 0.5)
                 sceneNode?.addChildNode(axesNode)
