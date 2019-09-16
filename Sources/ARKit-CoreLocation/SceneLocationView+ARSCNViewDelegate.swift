@@ -112,6 +112,8 @@ extension SceneLocationView {
         }
         if sceneNode == nil {
             sceneNode = SCNNode()
+			sceneNode?.camera = self.camera
+			camera.zFar = 11.0
             scene.rootNode.addChildNode(sceneNode!)
 
             if showAxesNode {
