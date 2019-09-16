@@ -51,7 +51,7 @@ private extension PolylineNode {
 
     struct Constants {
         static let defaultBuilder: BoxBuilder = { (distance) -> SCNBox in
-            let box = SCNBox(width: 1, height: 0.2, length: distance, chamferRadius: 0)
+            let box = SCNBox(width: 1, height: 0.2, length: 10, chamferRadius: 0)
             box.firstMaterial?.diffuse.contents = UIColor(red: 47.0/255.0, green: 125.0/255.0, blue: 255.0/255.0, alpha: 1.0)
             return box
         }

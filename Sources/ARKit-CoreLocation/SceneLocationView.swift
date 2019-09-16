@@ -37,8 +37,7 @@ open class SceneLocationView: ARSCNView {
     public weak var sceneTrackingDelegate: SceneTrackingDelegate?
 
     public let sceneLocationManager = SceneLocationManager()
-	public let camera = SCNCamera()
-
+	
     /// Addresses [Issue #196](https://github.com/ProjectDent/ARKit-CoreLocation/issues/196) -
     /// Delegate issue when assigned to self (no location nodes render).   If the user
     /// tries to set the delegate, perform an assertionFailure and tell them to set the `arViewDelegate` instead.
