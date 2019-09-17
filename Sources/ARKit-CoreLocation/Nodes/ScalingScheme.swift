@@ -19,7 +19,7 @@ import Foundation
 /// further than the buffer distance, otherwise it just returns 100% scale.
 public enum ScalingScheme {
 
-    case normal
+	case normal
     case tiered(threshold: Double, scale: Float)
     case doubleTiered(firstThreshold: Double, firstScale: Float, secondThreshold: Double, secondScale: Float)
     case linear(threshold: Double)

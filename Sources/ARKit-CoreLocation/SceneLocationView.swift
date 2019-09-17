@@ -14,6 +14,11 @@ import MapKit
 //Should conform to delegate here, add in future commit
 @available(iOS 11.0, *)
 open class SceneLocationView: ARSCNView {
+	
+	/// JC: The limit at which scene contents will be rendered
+	var zFar: CLLocationDistance = 30.0
+	
+	
     /// The limit to the scene, in terms of what data is considered reasonably accurate.
     /// Measured in meters.
 	static let sceneLimit = 100.0
@@ -178,6 +183,7 @@ open class SceneLocationView: ARSCNView {
     }
 }
 
+// MARK: Jacob Caraballo Addition
 @available(iOS 11.0, *)
 public extension SceneLocationView {
 	
@@ -337,45 +343,159 @@ public extension SceneLocationView {
     }
 }
 
-// MARK: Jacob Caraballo addition
+// MARK: Jacob Caraballo Addition
 @available(iOS 11.0, *)
 public extension SceneLocationView {
 	
-	/// Adds routes to the scene and lets you specify the geometry prototype for the box.
-	/// Note: You can provide your own SCNBox prototype to base the direction nodes from.
+	/// JC: Sets the radius at which the fog will fade out the contents of the scene
+	var sceneRadius: CGFloat {
+		set {
+			scene.fogColor = UIColor.black
+			scene.fogStartDistance = newValue - 5
+			scene.fogEndDistance = newValue
+			scene.fogDensityExponent = 1.0
+		}
+		get {
+			return scene.fogEndDistance
+		}
+	}
+	
+}
+
+
+// MARK: Jacob Caraballo Addition
+@available(iOS 11.0, *)
+public extension SceneLocationView {
+	
+	
+	/// JC: Adds a route with the given coordinates and attributes.
+	func addRoute(with coordinates: [CLLocationCoordinate2D], lineAttributes: PolylineAttributes! = nil) {
+		
+		let attributes = lineAttributes ?? PolylineAttributes()
+		addRoute(with: coordinates, boxBuilder: { distance -> SCNBox in
+			let box = SCNBox(width: attributes.width, height: attributes.height, length: distance - attributes.lengthOffset, chamferRadius: attributes.chamferRadius)
+			box.firstMaterial?.diffuse.contents = UIColor.black
+			box.firstMaterial?.reflective.contents = attributes.blendColor
+			box.firstMaterial?.blendMode = .screen
+			return box
+		})
+		
+	}
+	
+	/// JC: Adds a route to the scene and lets you specify the geometry prototype for the box.
 	///
 	/// - Parameters:
-	///   - polyline: The MKPolyline of coordinates.
+	///   - coordinates: The coordinates of the path to be drawn.
 	///   - boxBuilder: A block that will customize how a box is built.
-	func addRoute(with polyline: MKPolyline, boxBuilder: BoxBuilder? = nil) {
+	func addRoute(with coordinates: [CLLocationCoordinate2D], boxBuilder: @escaping BoxBuilder) {
+		
+		
 		guard let altitude = sceneLocationManager.currentLocation?.altitude else {
 			return assertionFailure("we don't have an elevation")
 		}
+
+		
+		// jc: clear scene for a new route
+		removeAllRoutes()
+		
+		
+		// jc: we'll use currentLoc and runningDistance to keep building up the distance of the points in the coordinates array
+		guard let firstCoord = coordinates.first else { return }
+		var currentLoc = CLLocation(coordinate: firstCoord, altitude: 0)
+		var runningDistance: CLLocationDistance = 0
+		var coordinatesInRange = [firstCoord]
+		
+		
+		// jc: filter out the coordinates array of the portion of the path that is beyond the zFar radius
+		for i in 1..<coordinates.count {
+			let coord = coordinates[i]
+			let loc = CLLocation(coordinate: coord, altitude: 0)
+			runningDistance += currentLoc.distance(from: loc)
+			if runningDistance >= zFar {
+				break
+			}
+			
+			coordinatesInRange.append(coord)
+			currentLoc = loc
+		}
+		
+		
+		// jc: create polyline with the filtered coordinates array
+		let polyline = MKPolyline(coordinates: coordinatesInRange, count: coordinatesInRange.count)
 		let polyNode = PolylineNode(polyline: polyline, altitude: altitude - 2.0, boxBuilder: boxBuilder)
 		polylineNodes.append(polyNode)
-		polyNode.locationNodes.forEach {
-			let locationNodeLocation = self.locationOfLocationNode($0)
-			$0.updatePositionAndScale(setup: true,
-									  scenePosition: currentScenePosition,
-									  locationNodeLocation: locationNodeLocation,
-									  locationManager: sceneLocationManager,
-									  onCompletion: {})
-			sceneNode?.addChildNode($0)
+		
+		
+		// jc: add the nodes to the scene
+		for node in polyNode.locationNodes {
+			
+			let locationNodeLocation = self.locationOfLocationNode(node)
+			node.updatePositionAndScale(
+				setup: true,
+				scenePosition: currentScenePosition,
+				locationNodeLocation: locationNodeLocation,
+				locationManager: sceneLocationManager,
+				onCompletion: {})
+			
+			sceneNode?.addChildNode(node)
+			
+		}
+		
+		
+		// jc: flatten all the nodes in the path into a single clone node to allow for fading out the path at a distance and reducing draw calls
+		if let flattened = sceneNode?.flattenedClone() {
+			
+			// jc: remove all the nodes in the scene
+			removeAllNodes()
+			removeAllRoutes()
+			
+			// jc: add the single flattened clone to the scene
+			sceneNode?.addChildNode(flattened)
+			
 		}
 		
 	}
+	
+	
+	/// JC: Removes all nodes and polyline routes from the scene
+	func removeAllRoutes() {
+		removeAllNodes()
+		polylineNodes.removeAll()
+	}
+	
+	
+	func removeRoute(with polyline: MKPolyline) {
+		polylineNodes.removeAll(where: { $0.polyline == polyline })
+	}
+	
 }
 
 @available(iOS 11.0, *)
 public extension SceneLocationView {
-
+	
+	
+	/// JC: Adds routes with the given MKRoute objects and attributes.
+	func addRoutes(routes: [MKRoute], lineAttributes: PolylineAttributes! = nil) {
+		
+		let attributes = lineAttributes ?? PolylineAttributes()
+		addRoutes(routes: routes, boxBuilder: { distance -> SCNBox in
+			let box = SCNBox(width: attributes.width, height: attributes.height, length: distance - attributes.lengthOffset, chamferRadius: attributes.chamferRadius)
+			box.firstMaterial?.diffuse.contents = UIColor.black
+			box.firstMaterial?.reflective.contents = attributes.blendColor
+			box.firstMaterial?.blendMode = .screen
+			return box
+		})
+		
+	}
+	
+	
     /// Adds routes to the scene and lets you specify the geometry prototype for the box.
     /// Note: You can provide your own SCNBox prototype to base the direction nodes from.
     ///
     /// - Parameters:
     ///   - routes: The MKRoute of directions.
     ///   - boxBuilder: A block that will customize how a box is built.
-    func addRoutes(routes: [MKRoute], boxBuilder: BoxBuilder? = nil) {
+	func addRoutes(routes: [MKRoute], boxBuilder: @escaping BoxBuilder) {
         guard let altitude = sceneLocationManager.currentLocation?.altitude else {
             return assertionFailure("we don't have an elevation")
         }

@@ -14,4 +14,12 @@ public extension SCNVector3 {
     func distance(to anotherVector: SCNVector3) -> Float {
         return sqrt(pow(anotherVector.x - x, 2) + pow(anotherVector.z - z, 2))
     }
+	
+	// MARK: Jacob Caraballo Addition
+	func isZero() -> Bool {
+		return 	self.x == 0 &&
+				self.y == 0 &&
+				self.z == 0
+	}
+	
 }

@@ -14,6 +14,28 @@ import MapKit
 /// Note: the distance should be aassigned to the length
 public typealias BoxBuilder = (_ distance: CGFloat) -> SCNBox
 
+
+/// JC: Struct to customize the polyline
+public struct PolylineAttributes {
+	
+	/// JC: Sets the width of the polyline.
+	public var width: CGFloat = 1.0
+	
+	/// JC: Sets the height of the polyline.
+	public var height: CGFloat = 0.2
+	
+	/// JC: Sets the length offset of the polyline. Consecutive lines will be separated by this offset.
+	public var lengthOffset: CGFloat = 0
+	
+	/// JC: Sets the chamfer radius of the polyline.
+	public var chamferRadius: CGFloat = 0
+	
+	/// JC: Sets the blending color of the polyline. May not always produce an exact color, since the polyline screen blends with the world in order to fade out the line at a distance.
+	public var blendColor: UIColor = .green
+	
+}
+
+
 /// A Node that is used to show directions in AR-CL.
 public class PolylineNode: LocationNode {
     public private(set) var locationNodes = [LocationNode]()
@@ -21,6 +43,7 @@ public class PolylineNode: LocationNode {
     public let polyline: MKPolyline
     public let altitude: CLLocationDistance
     public let boxBuilder: BoxBuilder
+	
 
     /// Creates a `PolylineNode` from the provided polyline, altitude (which is assumed to be uniform
     /// for all of the points) and an optional SCNBox to use as a prototype for the location boxes.
@@ -29,15 +52,27 @@ public class PolylineNode: LocationNode {
     ///   - polyline: The polyline that we'll be creating location nodes for.
     ///   - altitude: The uniform altitude to use to show the location nodes.
     ///   - boxBuilder: A block that will customize how a box is built.
-    public init(polyline: MKPolyline, altitude: CLLocationDistance, boxBuilder: BoxBuilder? = nil) {
+	public init(polyline: MKPolyline, altitude: CLLocationDistance, boxBuilder: @escaping BoxBuilder) {
         self.polyline = polyline
         self.altitude = altitude
-        self.boxBuilder = boxBuilder ?? Constants.defaultBuilder
+		self.boxBuilder = boxBuilder
 
         super.init(location: nil)
 
         contructNodes()
     }
+	
+	
+	/// JC: Creates a `PolylineNode` using the given polyline, altitude, and attributes.
+	convenience init(polyline: MKPolyline, altitude: CLLocationDistance, attributes: PolylineAttributes = PolylineAttributes()) {
+		self.init(polyline: polyline, altitude: altitude, boxBuilder: { (distance) -> SCNBox in
+			let box = SCNBox(width: attributes.width, height: attributes.height, length: distance - attributes.lengthOffset, chamferRadius: attributes.chamferRadius)
+			box.firstMaterial?.diffuse.contents = UIColor.black
+			box.firstMaterial?.reflective.contents = attributes.blendColor
+			box.firstMaterial?.blendMode = .screen
+			return box
+		})
+	}
 
 	required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -48,14 +83,6 @@ public class PolylineNode: LocationNode {
 // MARK: - Implementation
 
 private extension PolylineNode {
-
-    struct Constants {
-        static let defaultBuilder: BoxBuilder = { (distance) -> SCNBox in
-            let box = SCNBox(width: 1, height: 0.2, length: 10, chamferRadius: 0)
-            box.firstMaterial?.diffuse.contents = UIColor(red: 47.0/255.0, green: 125.0/255.0, blue: 255.0/255.0, alpha: 1.0)
-            return box
-        }
-    }
 
     /// This is what actually builds the SCNNodes and appends them to the
     /// locationNodes collection so they can be added to the scene and shown
