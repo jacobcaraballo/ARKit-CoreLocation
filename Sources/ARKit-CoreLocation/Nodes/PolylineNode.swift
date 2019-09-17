@@ -64,7 +64,8 @@ public class PolylineNode: LocationNode {
 	
 	
 	/// JC: Creates a `PolylineNode` using the given polyline, altitude, and attributes.
-	convenience init(polyline: MKPolyline, altitude: CLLocationDistance, attributes: PolylineAttributes = PolylineAttributes()) {
+	public convenience init(polyline: MKPolyline, altitude: CLLocationDistance, attributes: PolylineAttributes!) {
+		let attributes = attributes ?? PolylineAttributes()
 		self.init(polyline: polyline, altitude: altitude, boxBuilder: { (distance) -> SCNBox in
 			let box = SCNBox(width: attributes.width, height: attributes.height, length: distance - attributes.lengthOffset, chamferRadius: attributes.chamferRadius)
 			box.firstMaterial?.diffuse.contents = UIColor.black

@@ -16,7 +16,7 @@ import MapKit
 open class SceneLocationView: ARSCNView {
 	
 	/// JC: The limit at which scene contents will be rendered
-	var zFar: CLLocationDistance = 30.0
+	public var zFar: CLLocationDistance = 30.0
 	
 	
     /// The limit to the scene, in terms of what data is considered reasonably accurate.
