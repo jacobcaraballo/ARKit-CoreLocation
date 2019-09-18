@@ -496,13 +496,17 @@ public extension SceneLocationView {
     ///   - routes: The MKRoute of directions.
     ///   - boxBuilder: A block that will customize how a box is built.
 	func addRoutes(routes: [MKRoute], boxBuilder: @escaping BoxBuilder) {
+		
+		guard let altitude = sceneLocationManager.currentLocation?.altitude else {
+			return assertionFailure("we don't have an elevation")
+		}
        
 		// jc: convert routes to set of coordinates and add to scene
 		routes.forEach { (route) in
 			
 			let coords =
 				PolylineNode(
-					polyline: $0.polyline,
+					polyline: route.polyline,
 					altitude: altitude - 2.0,
 					boxBuilder: boxBuilder)
 					.locationNodes.map { $0.location.coordinate }
