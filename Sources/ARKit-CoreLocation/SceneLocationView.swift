@@ -309,6 +309,20 @@ public extension SceneLocationView {
             node.removeFromParentNode()
         }
     }
+	
+	
+	/// JC: Returns all scene nodes
+	func allNodes() -> [SCNNode] {
+		return sceneNode?.childNodes ?? []
+	}
+	
+	/// JC: Removes given scene nodes
+	func removeNodes(nodes: [SCNNode]) {
+		locationNodes.removeAll { nodes.contains($0) }
+		for node in nodes {
+			node.removeFromParentNode()
+		}
+	}
 
     /// Determine if scene contains a node with the specified tag
     ///
@@ -389,14 +403,12 @@ public extension SceneLocationView {
 	///   - boxBuilder: A block that will customize how a box is built.
 	func addRoute(with coordinates: [CLLocationCoordinate2D], boxBuilder: @escaping BoxBuilder) {
 		
+		// jc: ensure our scene node exists
+		guard let sceneNode = sceneNode else { return }
 		
 		guard let altitude = sceneLocationManager.currentLocation?.altitude else {
 			return assertionFailure("we don't have an elevation")
 		}
-
-		
-		// jc: clear scene for a new route
-		removeAllRoutes()
 		
 		
 		// jc: we'll use currentLoc and runningDistance to keep building up the distance of the points in the coordinates array
@@ -419,6 +431,7 @@ public extension SceneLocationView {
 			currentLoc = loc
 		}
 		
+		removeAllRoutes()
 		
 		// jc: create polyline with the filtered coordinates array
 		let polyline = MKPolyline(coordinates: coordinatesInRange, count: coordinatesInRange.count)
@@ -437,22 +450,36 @@ public extension SceneLocationView {
 				locationManager: sceneLocationManager,
 				onCompletion: {})
 			
-			sceneNode?.addChildNode(node)
+			sceneNode.addChildNode(node)
 			
 		}
 		
 		
 		// jc: flatten all the nodes in the path into a single clone node to allow for fading out the path at a distance and reducing draw calls
-		if let flattened = sceneNode?.flattenedClone() {
-			
-			// jc: remove all the nodes in the scene
-			removeAllNodes()
-			removeAllRoutes()
-			
-			// jc: add the single flattened clone to the scene
-			sceneNode?.addChildNode(flattened)
-			
-		}
+//		let flattened = sceneNode.flattenedClone()
+//		flattened.opacity = 0
+		
+		// jc: remove all the nodes in the scene
+//		let nodesToRemove = allNodes()
+//		let routesToRemove =
+		
+		// jc: add the single flattened clone to the scene
+//		sceneNode.addChildNode(sceneNode)
+		
+		
+		// jc: cross fade route change
+//		let fadeInAction = SCNAction.fadeIn(duration: 0.2)
+//		let fadeOutAction = SCNAction.fadeOut(duration: 0.2)
+//
+//		flattened.runAction(fadeInAction)
+//		sceneNode.runAction(fadeOutAction) {
+//			// delete previous nodes
+//			self.removeNodes(nodes: nodesToRemove)
+//
+//			// remove previous route
+//
+//		}
+		
 		
 	}
 	
