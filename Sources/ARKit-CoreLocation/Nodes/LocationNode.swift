@@ -154,7 +154,7 @@ open class LocationNode: SCNNode {
         }
 
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = setup ? 0.0 : 0.1
+        SCNTransaction.animationDuration = setup ? 0.0 : NodePositionAnimationDuration
 
         let distance = self.location(locationManager.bestLocationEstimate).distance(from:
             locationManager.currentLocation ?? nodeLocation)

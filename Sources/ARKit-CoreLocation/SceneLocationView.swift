@@ -11,6 +11,11 @@ import ARKit
 import CoreLocation
 import MapKit
 
+
+/// JC: The duration at which the nodes will update their position
+public var NodePositionAnimationDuration: CFTimeInterval = 0.3
+
+
 //Should conform to delegate here, add in future commit
 @available(iOS 11.0, *)
 open class SceneLocationView: ARSCNView {
@@ -431,7 +436,10 @@ public extension SceneLocationView {
 			currentLoc = loc
 		}
 		
+		
+		// jc: remove all routes and nodes in the scene
 		removeAllRoutes()
+		
 		
 		// jc: create polyline with the filtered coordinates array
 		let polyline = MKPolyline(coordinates: coordinatesInRange, count: coordinatesInRange.count)
@@ -454,31 +462,18 @@ public extension SceneLocationView {
 			
 		}
 		
+		/*
 		
 		// jc: flatten all the nodes in the path into a single clone node to allow for fading out the path at a distance and reducing draw calls
-//		let flattened = sceneNode.flattenedClone()
-//		flattened.opacity = 0
+		let flattened = sceneNode.flattenedClone()
 		
 		// jc: remove all the nodes in the scene
-//		let nodesToRemove = allNodes()
-//		let routesToRemove =
+		removeAllRoutes()
 		
 		// jc: add the single flattened clone to the scene
-//		sceneNode.addChildNode(sceneNode)
+		sceneNode.addChildNode(flattened)
 		
-		
-		// jc: cross fade route change
-//		let fadeInAction = SCNAction.fadeIn(duration: 0.2)
-//		let fadeOutAction = SCNAction.fadeOut(duration: 0.2)
-//
-//		flattened.runAction(fadeInAction)
-//		sceneNode.runAction(fadeOutAction) {
-//			// delete previous nodes
-//			self.removeNodes(nodes: nodesToRemove)
-//
-//			// remove previous route
-//
-//		}
+		*/
 		
 		
 	}

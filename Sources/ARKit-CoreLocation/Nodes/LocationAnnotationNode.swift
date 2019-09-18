@@ -55,7 +55,7 @@ open class LocationAnnotationNode: LocationNode {
         guard let position = scenePosition, let location = locationManager.currentLocation else { return }
 
         SCNTransaction.begin()
-        SCNTransaction.animationDuration = setup ? 0.0 : 0.1
+        SCNTransaction.animationDuration = setup ? 0.0 : NodePositionAnimationDuration
 
         let distance = self.location(locationManager.bestLocationEstimate).distance(from: location)
 
