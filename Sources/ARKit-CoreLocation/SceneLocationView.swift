@@ -16,7 +16,7 @@ import MapKit
 open class SceneLocationView: ARSCNView {
 	
 	/// JC: The limit at which scene contents will be rendered
-	public var zFar: CLLocationDistance = 30.0
+	public var zFar: CLLocationDistance = 1000.0
 	
 	
     /// The limit to the scene, in terms of what data is considered reasonably accurate.
@@ -496,27 +496,34 @@ public extension SceneLocationView {
     ///   - routes: The MKRoute of directions.
     ///   - boxBuilder: A block that will customize how a box is built.
 	func addRoutes(routes: [MKRoute], boxBuilder: @escaping BoxBuilder) {
-        guard let altitude = sceneLocationManager.currentLocation?.altitude else {
-            return assertionFailure("we don't have an elevation")
-        }
-        let polyNodes = routes.map {
-            PolylineNode(polyline: $0.polyline, altitude: altitude - 2.0, boxBuilder: boxBuilder)
-        }
-
-        polylineNodes.append(contentsOf: polyNodes)
-        polyNodes.forEach {
-				$0.locationNodes.forEach {
-					let locationNodeLocation = self.locationOfLocationNode($0)
-				$0.updatePositionAndScale(setup: true,
-										  scenePosition: currentScenePosition,
-											  locationNodeLocation: locationNodeLocation,
-										  locationManager: sceneLocationManager,
-										  onCompletion: {})
-				sceneNode?.addChildNode($0)
-			}
+       
+		// jc: convert routes to set of coordinates and add to scene
+		routes.forEach { (route) in
+			
+			let coords =
+				PolylineNode(
+					polyline: $0.polyline,
+					altitude: altitude - 2.0,
+					boxBuilder: boxBuilder)
+					.locationNodes.map { $0.location.coordinate }
+			addRoute(with: coords, boxBuilder: boxBuilder)
+			
 		}
-    }
 
+    }
+	
+	/// JC: Adds a single MKRoute to the scene with a specified box builder.
+	func addRoute(route: MKRoute, boxBuilder: @escaping BoxBuilder) {
+		addRoutes(routes: [route], boxBuilder: boxBuilder)
+	}
+	
+	
+	/// JC: Adds a single MKRoute to the scene with specified line attributes.
+	func addRoute(route: MKRoute, lineAttributes: PolylineAttributes! = nil) {
+		addRoutes(routes: [route], lineAttributes: lineAttributes)
+	}
+	
+	
     func removeRoutes(routes: [MKRoute]) {
         routes.forEach { route in
             if let index = polylineNodes.firstIndex(where: { $0.polyline == route.polyline }) {
