@@ -437,43 +437,51 @@ public extension SceneLocationView {
 		}
 		
 		
-		// jc: remove all routes and nodes in the scene
-		removeAllRoutes()
-		
-		
-		// jc: create polyline with the filtered coordinates array
-		let polyline = MKPolyline(coordinates: coordinatesInRange, count: coordinatesInRange.count)
-		let polyNode = PolylineNode(polyline: polyline, altitude: altitude - 2.0, boxBuilder: boxBuilder)
-		polylineNodes.append(polyNode)
-		
-		
-		// jc: add the nodes to the scene
-		for node in polyNode.locationNodes {
+		// jc: remove all routes and nodes in the scene with fade out
+		sceneNode.runAction(SCNAction.fadeOut(duration: 0.4)) {
 			
-			let locationNodeLocation = self.locationOfLocationNode(node)
-			node.updatePositionAndScale(
-				setup: true,
-				scenePosition: currentScenePosition,
-				locationNodeLocation: locationNodeLocation,
-				locationManager: sceneLocationManager,
-				onCompletion: {})
+			self.removeAllRoutes()
 			
-			sceneNode.addChildNode(node)
+			
+			// jc: create polyline with the filtered coordinates array
+			let polyline = MKPolyline(coordinates: coordinatesInRange, count: coordinatesInRange.count)
+			let polyNode = PolylineNode(polyline: polyline, altitude: altitude - 2.0, boxBuilder: boxBuilder)
+			self.polylineNodes.append(polyNode)
+			
+			
+			// jc: add the nodes to the scene
+			for node in polyNode.locationNodes {
+				
+				let locationNodeLocation = self.locationOfLocationNode(node)
+				node.updatePositionAndScale(
+					setup: true,
+					scenePosition: self.currentScenePosition,
+					locationNodeLocation: locationNodeLocation,
+					locationManager: self.sceneLocationManager,
+					onCompletion: {})
+				
+				sceneNode.addChildNode(node)
+				
+			}
+			
+			
+			// jc: fade in the scene node
+			sceneNode.runAction(SCNAction.fadeIn(duration: 0.3))
+			
+			/*
+			
+			// jc: flatten all the nodes in the path into a single clone node to allow for fading out the path at a distance and reducing draw calls
+			let flattened = sceneNode.flattenedClone()
+			
+			// jc: remove all the nodes in the scene
+			removeAllRoutes()
+			
+			// jc: add the single flattened clone to the scene
+			sceneNode.addChildNode(flattened)
+			
+			*/
 			
 		}
-		
-		/*
-		
-		// jc: flatten all the nodes in the path into a single clone node to allow for fading out the path at a distance and reducing draw calls
-		let flattened = sceneNode.flattenedClone()
-		
-		// jc: remove all the nodes in the scene
-		removeAllRoutes()
-		
-		// jc: add the single flattened clone to the scene
-		sceneNode.addChildNode(flattened)
-		
-		*/
 		
 		
 	}
