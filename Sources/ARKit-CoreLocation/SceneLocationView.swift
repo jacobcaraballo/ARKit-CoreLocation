@@ -423,17 +423,21 @@ public extension SceneLocationView {
 		var coordinatesInRange = [firstCoord]
 		
 		
-		// jc: filter out the coordinates array of the portion of the path that is beyond the zFar radius
-		for i in 1..<coordinates.count {
-			let coord = coordinates[i]
-			let loc = CLLocation(coordinate: coord, altitude: 0)
-			runningDistance += currentLoc.distance(from: loc)
-			if runningDistance >= zFar {
-				break
+		// jc: filter out the coordinates array of the portion of the path that is beyond the zFar radius, unless zFar is 0
+		if zFar != 0 {
+			for i in 1..<coordinates.count {
+				let coord = coordinates[i]
+				let loc = CLLocation(coordinate: coord, altitude: 0)
+				runningDistance += currentLoc.distance(from: loc)
+				if runningDistance >= zFar {
+					break
+				}
+				
+				coordinatesInRange.append(coord)
+				currentLoc = loc
 			}
-			
-			coordinatesInRange.append(coord)
-			currentLoc = loc
+		} else {
+			coordinatesInRange = coordinates
 		}
 		
 		
